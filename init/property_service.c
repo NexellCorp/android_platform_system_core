@@ -99,6 +99,7 @@ struct {
     { "hwc.scale",        AID_SYSTEM,   0 },
     { "hwc.resolution",   AID_SYSTEM,   0 },
     { "hwc.hdmimode",     AID_SYSTEM,   0 },
+    { "hwc.screendownsizing",    AID_SYSTEM,   0 },
     /* end psw0523 */
     { NULL, 0, 0 }
 };
