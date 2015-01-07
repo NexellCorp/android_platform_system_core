@@ -14,6 +14,15 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_SYSTEM_SHARED_LIBRARIES := libcutils liblog libc
 include $(BUILD_SHARED_LIBRARY)
 
+# psw0523 add for vold ntfs-exfat-cm_11.0-version
+include $(CLEAR_VARS)
+LOCAL_SRC_FILES := $(commonSources)
+LOCAL_MODULE := libdiskconfig
+LOCAL_MODULE_TAGS := optional
+#LOCAL_STATIC_LIBRARIES := libcutils liblog libc
+include $(BUILD_STATIC_LIBRARY)
+#end psw0523
+
 ifeq ($(HOST_OS),linux)
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(commonSources)
