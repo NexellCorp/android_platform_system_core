@@ -201,6 +201,7 @@ static void make_device(const char *path,
     dev_t dev;
     char *secontext = NULL;
 
+    /*ERROR("%s: path %s, upath %s, block %d, major %d, minor %d\n", __func__, path, upath, block, major, minor);*/
     mode = get_device_perm(path, &uid, &gid) | (block ? S_IFBLK : S_IFCHR);
 
     if (sehandle) {
@@ -841,7 +842,7 @@ void handle_device_fd()
 **
 ** We drain any pending events from the netlink socket every time
 ** we poke another uevent file to make sure we don't overrun the
-** socket's buffer.  
+** socket's buffer.
 */
 
 static void do_coldboot(DIR *d)

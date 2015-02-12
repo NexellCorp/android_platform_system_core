@@ -21,7 +21,9 @@
 
 #define ERROR(x...)   KLOG_ERROR("init", x)
 #define NOTICE(x...)  KLOG_NOTICE("init", x)
+// psw0523 debugging
 #define INFO(x...)    KLOG_INFO("init", x)
+//#define INFO(x...)    KLOG_ERROR("init", x)
 
 #define LOG_UEVENTS        0  /* log uevent messages if 1. verbose */
 

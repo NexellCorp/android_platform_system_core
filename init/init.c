@@ -60,6 +60,9 @@
 #include "ueventd.h"
 #include "watchdogd.h"
 
+// psw0523 add for ueventd pthread
+#include <pthread.h>
+
 struct selabel_handle *sehandle;
 struct selabel_handle *sehandle_prop;
 
@@ -160,6 +163,10 @@ void service_start(struct service *svc, const char *dynamic_args)
     char *scon = NULL;
     int rc;
 
+    /*ERROR("starting '%s'\n", svc->name);*/
+    /*if (!strcmp(svc->name, "ueventd"))*/
+        /*return;*/
+
         /* starting a service removes it from the disabled or reset
          * state and immediately takes it out of the restarting
          * state if it was in there
@@ -231,6 +238,7 @@ void service_start(struct service *svc, const char *dynamic_args)
     }
 
     NOTICE("starting '%s'\n", svc->name);
+    /*ERROR("starting '%s'\n", svc->name);*/
 
     pid = fork();
 
@@ -357,6 +365,8 @@ void service_start(struct service *svc, const char *dynamic_args)
 
     if (properties_inited())
         notify_service_state(svc->name, "running");
+
+    /*ERROR("'%s' started\n", svc->name);*/
 }
 
 /* The how field should be either SVC_DISABLED, SVC_RESET, or SVC_RESTART */
@@ -550,6 +560,31 @@ void execute_one_command(void)
     INFO("command '%s' r=%d\n", cur_command->args[0], ret);
 }
 
+// psw0523 add
+static void execute_all_commands(void)
+{
+    INFO("===> execute all commands");
+    while (1) {
+        if (!cur_action || !cur_command || is_last_command(cur_action, cur_command)) {
+            cur_action = action_remove_queue_head();
+            cur_command = NULL;
+            if (!cur_action)
+                return;
+            INFO("processing action %p (%s)\n", cur_action, cur_action->name);
+            cur_command = get_first_command(cur_action);
+        } else {
+            cur_command = get_next_command(cur_action, cur_command);
+        }
+
+        if (!cur_command)
+            return;
+
+        INFO("command '%s'\n", cur_command->args[0]);
+        cur_command->func(cur_command->nargs, cur_command->args);
+        INFO("command %s end\n", cur_command->args[0]);
+    }
+}
+
 static int wait_for_coldboot_done_action(int nargs, char **args)
 {
     int ret;
@@ -657,6 +692,8 @@ static int console_init_action(int nargs, char **args)
         have_console = 1;
     close(fd);
 
+    // psw0523 fix for fine
+#if 0
     if( load_565rle_image(INIT_IMAGE_FILE) ) {
         fd = open("/dev/tty0", O_WRONLY);
         if (fd >= 0) {
@@ -680,6 +717,7 @@ static int console_init_action(int nargs, char **args)
             close(fd);
         }
     }
+#endif
     return 0;
 }
 
@@ -959,6 +997,13 @@ static void selinux_initialize(void)
     security_setenforce(is_enforcing);
 }
 
+// psw0523 add for ueventd
+static void *_start_ueventd(void *data)
+{
+    ueventd_main(0, NULL);
+    return NULL;
+}
+
 int main(int argc, char **argv)
 {
     int fd_count = 0;
@@ -1038,28 +1083,52 @@ int main(int argc, char **argv)
     INFO("reading config file\n");
     init_parse_config_file("/init.rc");
 
+    INFO("add early-init");
+#if 0
+    {
+        pthread_t threadId;
+        pthread_create(&threadId, NULL, _start_ueventd, NULL);
+    }
+#endif
+    // psw0523 test
+    /*queue_builtin_action(console_init_action, "console_init");*/
+    /*have_console = 1;*/
     action_for_each_trigger("early-init", action_add_queue_tail);
+    /*execute_all_commands();*/
+    /*INFO("<=== execute all commands");*/
 
     queue_builtin_action(wait_for_coldboot_done_action, "wait_for_coldboot_done");
-    queue_builtin_action(mix_hwrng_into_linux_rng_action, "mix_hwrng_into_linux_rng");
+    // psw0523 fix for fine
+    /*queue_builtin_action(mix_hwrng_into_linux_rng_action, "mix_hwrng_into_linux_rng");*/
     queue_builtin_action(keychord_init_action, "keychord_init");
     queue_builtin_action(console_init_action, "console_init");
 
+    INFO("add init");
     /* execute all the boot actions to get us started */
     action_for_each_trigger("init", action_add_queue_tail);
+    /*execute_all_commands();*/
+    /*INFO("<=== execute all commands");*/
 
     /* skip mounting filesystems in charger mode */
     if (!is_charger) {
         action_for_each_trigger("early-fs", action_add_queue_tail);
+        INFO("add early-fs");
         action_for_each_trigger("fs", action_add_queue_tail);
+        INFO("add fs");
         action_for_each_trigger("post-fs", action_add_queue_tail);
+        INFO("add post-fs");
         action_for_each_trigger("post-fs-data", action_add_queue_tail);
+        INFO("add post-fs-data");
+        // psw0523 test
+        /*execute_all_commands();*/
+        /*INFO("<=== execute all commands");*/
     }
 
     /* Repeat mix_hwrng_into_linux_rng in case /dev/hw_random or /dev/random
      * wasn't ready immediately after wait_for_coldboot_done
      */
-    queue_builtin_action(mix_hwrng_into_linux_rng_action, "mix_hwrng_into_linux_rng");
+    // psw0523 fix for fine
+    /*queue_builtin_action(mix_hwrng_into_linux_rng_action, "mix_hwrng_into_linux_rng");*/
 
     queue_builtin_action(property_service_init_action, "property_service_init");
     queue_builtin_action(signal_init_action, "signal_init");
@@ -1071,6 +1140,10 @@ int main(int argc, char **argv)
         action_for_each_trigger("early-boot", action_add_queue_tail);
         action_for_each_trigger("boot", action_add_queue_tail);
     }
+
+    // psw0523 test
+    execute_all_commands();
+    INFO("<=== execute all commands");
 
         /* run all property triggers based on current state of the properties */
     queue_builtin_action(queue_property_triggers_action, "queue_property_triggers");

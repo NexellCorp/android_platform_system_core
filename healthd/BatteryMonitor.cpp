@@ -170,6 +170,8 @@ int BatteryMonitor::getIntField(const String8& path) {
 }
 
 bool BatteryMonitor::update(void) {
+    // psw0523 fix for fine
+#if 1
     struct BatteryProperties props;
     bool logthis;
 
@@ -270,9 +272,14 @@ bool BatteryMonitor::update(void) {
 
     return props.chargerAcOnline | props.chargerUsbOnline |
             props.chargerWirelessOnline;
+#else
+    return false;
+#endif
 }
 
 void BatteryMonitor::init(struct healthd_config *hc, bool nosvcmgr) {
+    // psw0523 fix for fine
+#if 1
     String8 path;
 
     mHealthdConfig = hc;
@@ -414,6 +421,7 @@ void BatteryMonitor::init(struct healthd_config *hc, bool nosvcmgr) {
         KLOG_WARNING(LOG_TAG, "BatteryTemperaturePath not found\n");
     if (mHealthdConfig->batteryTechnologyPath.isEmpty())
         KLOG_WARNING(LOG_TAG, "BatteryTechnologyPath not found\n");
+#endif
 
     if (nosvcmgr == false) {
             mBatteryPropertiesRegistrar = new BatteryPropertiesRegistrar(this);

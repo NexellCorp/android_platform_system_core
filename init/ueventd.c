@@ -81,9 +81,13 @@ int ueventd_main(int argc, char **argv)
 
     ueventd_parse_config_file("/ueventd.rc");
 
+    // psw0523 fix for fine
+#if 0
     snprintf(tmp, sizeof(tmp), "/ueventd.%s.rc", hardware);
     ueventd_parse_config_file(tmp);
+#endif
 
+    /*system("/populate_dev.sh");*/
     device_init();
 
     ufd.events = POLLIN;

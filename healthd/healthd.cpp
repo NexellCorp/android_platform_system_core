@@ -236,7 +236,9 @@ static void healthd_mainloop(void) {
         int nevents;
 
         IPCThreadState::self()->flushCommands();
-        nevents = epoll_wait(epollfd, events, maxevents, awake_poll_interval);
+        // psw0523 test
+        //nevents = epoll_wait(epollfd, events, maxevents, awake_poll_interval);
+        nevents = epoll_wait(epollfd, events, maxevents, -1);
 
         if (nevents == -1) {
             if (errno == EINTR)
