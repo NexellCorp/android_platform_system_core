@@ -964,6 +964,14 @@ void device_init(void)
         chmod("/dev/bus/usb/001/002", 0777);
         chmod("/dev/bus/usb/002/001", 0777);
 
+        chmod("/dev/snd/controlC0", 0777);
+        chmod("/dev/snd/controlC1", 0777);
+        chmod("/dev/snd/pcmC0D0c", 0777);
+        chmod("/dev/snd/pcmC0D0p", 0777);
+        chmod("/dev/snd/pcmC1D0c", 0777);
+        chmod("/dev/snd/pcmC1D0p", 0777);
+        chmod("/dev/snd/timer", 0777);
+
         mkdir("/dev/log", 0777);
         make_my_device("/dev/log/system", 0, 10, 53);
         make_my_device("/dev/log/radio", 0, 10, 54);
