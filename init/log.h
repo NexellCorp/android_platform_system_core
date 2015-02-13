@@ -20,8 +20,9 @@
 #include <cutils/klog.h>
 
 #define ERROR(x...)   KLOG_ERROR("init", x)
-#define NOTICE(x...)  KLOG_NOTICE("init", x)
 // psw0523 debugging
+#define NOTICE(x...)  KLOG_NOTICE("init", x)
+//#define NOTICE(x...)  KLOG_ERROR("init", x)
 #define INFO(x...)    KLOG_INFO("init", x)
 //#define INFO(x...)    KLOG_ERROR("init", x)
 

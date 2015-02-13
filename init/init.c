@@ -563,7 +563,7 @@ void execute_one_command(void)
 // psw0523 add
 static void execute_all_commands(void)
 {
-    INFO("===> execute all commands");
+    INFO("===> execute all commands\n");
     while (1) {
         if (!cur_action || !cur_command || is_last_command(cur_action, cur_command)) {
             cur_action = action_remove_queue_head();
@@ -1029,11 +1029,13 @@ int main(int argc, char **argv)
          * together in the initramdisk on / and then we'll
          * let the rc file figure out the rest.
          */
-    mkdir("/dev", 0755);
+    // psw0523 fix for fine
+    /*mkdir("/dev", 0755);*/
     mkdir("/proc", 0755);
     mkdir("/sys", 0755);
 
-    mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "mode=0755");
+    // psw0523 fix for fdone
+    /*mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "mode=0755");*/
     mkdir("/dev/pts", 0755);
     mkdir("/dev/socket", 0755);
     mount("devpts", "/dev/pts", "devpts", 0, NULL);
@@ -1057,6 +1059,8 @@ int main(int argc, char **argv)
 
     process_kernel_cmdline();
 
+    // psw0523 test
+#if 0
     union selinux_callback cb;
     cb.func_log = klog_write;
     selinux_set_callback(SELINUX_CB_LOG, cb);
@@ -1073,6 +1077,7 @@ int main(int argc, char **argv)
     restorecon("/dev/socket");
     restorecon("/dev/__properties__");
     restorecon_recursive("/sys");
+#endif
 
     is_charger = !strcmp(bootmode, "charger");
 
@@ -1083,31 +1088,26 @@ int main(int argc, char **argv)
     INFO("reading config file\n");
     init_parse_config_file("/init.rc");
 
-    INFO("add early-init");
-#if 0
-    {
-        pthread_t threadId;
-        pthread_create(&threadId, NULL, _start_ueventd, NULL);
-    }
-#endif
-    // psw0523 test
-    /*queue_builtin_action(console_init_action, "console_init");*/
-    /*have_console = 1;*/
+    INFO("add early-init\n");
     action_for_each_trigger("early-init", action_add_queue_tail);
-    /*execute_all_commands();*/
-    /*INFO("<=== execute all commands");*/
+    execute_all_commands();
+    INFO("<=== execute all commands\n");
 
-    queue_builtin_action(wait_for_coldboot_done_action, "wait_for_coldboot_done");
+    // psw0523 fix
+    /*queue_builtin_action(wait_for_coldboot_done_action, "wait_for_coldboot_done");*/
+
     // psw0523 fix for fine
     /*queue_builtin_action(mix_hwrng_into_linux_rng_action, "mix_hwrng_into_linux_rng");*/
     queue_builtin_action(keychord_init_action, "keychord_init");
-    queue_builtin_action(console_init_action, "console_init");
+    // psw0523 fix
+    /*queue_builtin_action(console_init_action, "console_init");*/
+    have_console = 1;
 
-    INFO("add init");
+    INFO("add init\n");
     /* execute all the boot actions to get us started */
     action_for_each_trigger("init", action_add_queue_tail);
-    /*execute_all_commands();*/
-    /*INFO("<=== execute all commands");*/
+    execute_all_commands();
+    INFO("<=== execute all commands");
 
     /* skip mounting filesystems in charger mode */
     if (!is_charger) {
@@ -1143,7 +1143,7 @@ int main(int argc, char **argv)
 
     // psw0523 test
     execute_all_commands();
-    INFO("<=== execute all commands");
+    INFO("<=== execute all commands\n");
 
         /* run all property triggers based on current state of the properties */
     queue_builtin_action(queue_property_triggers_action, "queue_property_triggers");
