@@ -1055,6 +1055,7 @@ void device_init(void)
     fcntl(device_fd, F_SETFL, O_NONBLOCK);
 
     // psw0523 test
+#if 0
     {
         fd = open(coldboot_done, O_WRONLY|O_CREAT, 0000);
         close(fd);
@@ -1137,6 +1138,7 @@ void device_init(void)
         mkdir("/dev/graphics", 0777);
         make_my_device("/dev/graphics/fb0", 0, 29, 0);
     }
+#endif
     // end psw0523
 
     if (stat(coldboot_done, &info) < 0) {

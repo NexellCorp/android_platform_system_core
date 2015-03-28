@@ -91,7 +91,7 @@ int ueventd_main(int argc, char **argv)
     get_hardware_name(hardware, &revision);
 
     // psw0523 test
-#if 0
+#if 1
     ueventd_parse_config_file("/ueventd.rc");
 
     snprintf(tmp, sizeof(tmp), "/ueventd.%s.rc", hardware);
