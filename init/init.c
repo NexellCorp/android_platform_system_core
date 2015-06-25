@@ -998,6 +998,31 @@ static void selinux_initialize(void)
     security_setenforce(is_enforcing);
 }
 
+// psw0523 add
+static void execute_all_commands(void)
+{
+    INFO("===> execute all commands\n");
+    while (1) {
+        if (!cur_action || !cur_command || is_last_command(cur_action, cur_command)) {
+            cur_action = action_remove_queue_head();
+            cur_command = NULL;
+            if (!cur_action)
+                return;
+            INFO("processing action %p (%s)\n", cur_action, cur_action->name);
+            cur_command = get_first_command(cur_action);
+        } else {
+            cur_command = get_next_command(cur_action, cur_command);
+        }
+
+        if (!cur_command)
+            return;
+
+        INFO("command '%s'\n", cur_command->args[0]);
+        cur_command->func(cur_command->nargs, cur_command->args);
+        INFO("command %s end\n", cur_command->args[0]);
+    }
+}
+
 int main(int argc, char **argv)
 {
     int fd_count = 0;
@@ -1016,6 +1041,8 @@ int main(int argc, char **argv)
     if (!strcmp(basename(argv[0]), "watchdogd"))
         return watchdogd_main(argc, argv);
 
+    /*system("/ramjar.sh");*/
+
     /* clear the umask */
     umask(0);
 
@@ -1023,11 +1050,13 @@ int main(int argc, char **argv)
          * together in the initramdisk on / and then we'll
          * let the rc file figure out the rest.
          */
-    mkdir("/dev", 0755);
-    mkdir("/proc", 0755);
-    mkdir("/sys", 0755);
+    // psw0523 fix
+    /*mkdir("/dev", 0755);*/
+    /*mkdir("/proc", 0755);*/
+    /*mkdir("/sys", 0755);*/
 
-    mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "mode=0755");
+    // psw0523 fix
+    /*mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "mode=0755");*/
     mkdir("/dev/pts", 0755);
     mkdir("/dev/socket", 0755);
     mount("devpts", "/dev/pts", "devpts", 0, NULL);
@@ -1051,6 +1080,8 @@ int main(int argc, char **argv)
 
     process_kernel_cmdline();
 
+    // psw0523 fix
+#if 0
     union selinux_callback cb;
     cb.func_log = log_callback;
     selinux_set_callback(SELINUX_CB_LOG, cb);
@@ -1067,8 +1098,10 @@ int main(int argc, char **argv)
     restorecon("/dev/socket");
     restorecon("/dev/__properties__");
     restorecon_recursive("/sys");
+#endif
 
-    is_charger = !strcmp(bootmode, "charger");
+    // psw0523 fix
+    /*is_charger = !strcmp(bootmode, "charger");*/
 
     INFO("property init\n");
     property_load_boot_defaults();
@@ -1077,28 +1110,41 @@ int main(int argc, char **argv)
     init_parse_config_file("/init.rc");
 
     action_for_each_trigger("early-init", action_add_queue_tail);
+    // psw0523 add
+    execute_all_commands();
 
-    queue_builtin_action(wait_for_coldboot_done_action, "wait_for_coldboot_done");
-    queue_builtin_action(mix_hwrng_into_linux_rng_action, "mix_hwrng_into_linux_rng");
+    // psw0523 fix
+    /*queue_builtin_action(wait_for_coldboot_done_action, "wait_for_coldboot_done");*/
+    /*queue_builtin_action(mix_hwrng_into_linux_rng_action, "mix_hwrng_into_linux_rng");*/
     queue_builtin_action(keychord_init_action, "keychord_init");
-    queue_builtin_action(console_init_action, "console_init");
+    // psw0523 fix
+    /*queue_builtin_action(console_init_action, "console_init");*/
+    have_console = 1;
 
     /* execute all the boot actions to get us started */
     action_for_each_trigger("init", action_add_queue_tail);
+    // psw0523 add
+    execute_all_commands();
 
     /* Repeat mix_hwrng_into_linux_rng in case /dev/hw_random or /dev/random
      * wasn't ready immediately after wait_for_coldboot_done
      */
-    queue_builtin_action(mix_hwrng_into_linux_rng_action, "mix_hwrng_into_linux_rng");
+    // psw0523 fix
+    /*queue_builtin_action(mix_hwrng_into_linux_rng_action, "mix_hwrng_into_linux_rng");*/
     queue_builtin_action(property_service_init_action, "property_service_init");
     queue_builtin_action(signal_init_action, "signal_init");
 
     /* Don't mount filesystems or start core system services if in charger mode. */
+    // psw0523 fix
+#if 0
     if (is_charger) {
         action_for_each_trigger("charger", action_add_queue_tail);
     } else {
         action_for_each_trigger("late-init", action_add_queue_tail);
     }
+#else
+    action_for_each_trigger("late-init", action_add_queue_tail);
+#endif
 
     /* run all property triggers based on current state of the properties */
     queue_builtin_action(queue_property_triggers_action, "queue_property_triggers");

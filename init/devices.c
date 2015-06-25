@@ -266,6 +266,14 @@ static void make_device(const char *path,
     }
 }
 
+// psw0523 test
+static void make_my_device(const char *path, int block, int major, int minor)
+{
+    dev_t dev = makedev(major, minor);
+    mknod(path, 0777 | (block ? S_IFBLK : S_IFCHR), dev);
+}
+// end psw0523
+
 static void add_platform_device(const char *path)
 {
     int path_len = strlen(path);
@@ -977,7 +985,7 @@ void handle_device_fd()
 **
 ** We drain any pending events from the netlink socket every time
 ** we poke another uevent file to make sure we don't overrun the
-** socket's buffer.  
+** socket's buffer.
 */
 
 static void do_coldboot(DIR *d)
@@ -1030,10 +1038,13 @@ void device_init(void)
     int fd;
 
     sehandle = NULL;
+    // psw0523 fix for fine
+#if 0
     if (is_selinux_enabled() > 0) {
         sehandle = selinux_android_file_context_handle();
         selinux_status_open(true);
     }
+#endif
 
     /* is 256K enough? udev uses 16MB! */
     device_fd = uevent_open_socket(256*1024, true);
@@ -1042,6 +1053,95 @@ void device_init(void)
 
     fcntl(device_fd, F_SETFD, FD_CLOEXEC);
     fcntl(device_fd, F_SETFL, O_NONBLOCK);
+
+    // psw0523 test
+#if 1
+    {
+        fd = open(coldboot_done, O_WRONLY|O_CREAT, 0000);
+        close(fd);
+        chmod("/dev/alarm", 0777);
+        chmod("/dev/android_adb", 0777);
+        chmod("/dev/ashmem", 0777);
+        chmod("/dev/binder", 0777);
+        chmod("/dev/full", 0777);
+        chmod("/dev/ion", 0777);
+        chmod("/dev/media0", 0777);
+        chmod("/dev/mtp_usb", 0777);
+        chmod("/dev/null", 0777);
+        chmod("/dev/nx_vpu", 0777);
+        chmod("/dev/nxp-scaler", 0777);
+        chmod("/dev/ptmx", 0777);
+        chmod("/dev/random", 0777);
+        chmod("/dev/sw_sync", 0777);
+        chmod("/dev/tdmb0.1", 0777);
+        chmod("/dev/tty", 0777);
+        chmod("/dev/ttySAC4", 0777);
+        chmod("/dev/uhid", 0777);
+        chmod("/dev/uinput", 0777);
+        chmod("/dev/urandom", 0777);
+        chmod("/dev/usb_accessory", 0777);
+        chmod("/dev/v4l-subdev0", 0777);
+        chmod("/dev/v4l-subdev1", 0777);
+        chmod("/dev/v4l-subdev2", 0777);
+        chmod("/dev/v4l-subdev3", 0777);
+        chmod("/dev/v4l-subdev4", 0777);
+        chmod("/dev/v4l-subdev5", 0777);
+        chmod("/dev/v4l-subdev6", 0777);
+        chmod("/dev/v4l-subdev7", 0777);
+        chmod("/dev/video0", 0777);
+        chmod("/dev/video1", 0777);
+        chmod("/dev/video2", 0777);
+        chmod("/dev/video3", 0777);
+        chmod("/dev/video4", 0777);
+        chmod("/dev/video5", 0777);
+        chmod("/dev/vr", 0777);
+        chmod("/dev/zero", 0777);
+        chmod("/dev/input/event0", 0777);
+        chmod("/dev/input/event1", 0777);
+        chmod("/dev/bus/usb/001/001", 0777);
+        chmod("/dev/bus/usb/001/002", 0777);
+        chmod("/dev/bus/usb/002/001", 0777);
+
+        chmod("/dev/snd/controlC0", 0777);
+        chmod("/dev/snd/controlC1", 0777);
+        chmod("/dev/snd/pcmC0D0c", 0777);
+        chmod("/dev/snd/pcmC0D0p", 0777);
+        chmod("/dev/snd/pcmC1D0c", 0777);
+        chmod("/dev/snd/pcmC1D0p", 0777);
+        chmod("/dev/snd/timer", 0777);
+
+        make_my_device("/dev/android_adb", 0, 10, 45);
+
+        mkdir("/dev/log", 0777);
+        make_my_device("/dev/log/system", 0, 10, 53);
+        make_my_device("/dev/log/radio", 0, 10, 54);
+        make_my_device("/dev/log/events", 0, 10, 55);
+        make_my_device("/dev/log/main", 0, 10, 56);
+
+        make_my_device("/dev/device-mapper", 0, 10, 236);
+
+        mkdir("/dev/block", 0777);
+        make_my_device("/dev/block/loop0", 1, 7, 0);
+        make_my_device("/dev/block/loop1", 1, 7, 1);
+        make_my_device("/dev/block/loop2", 1, 7, 2);
+        make_my_device("/dev/block/loop3", 1, 7, 3);
+        make_my_device("/dev/block/loop4", 1, 7, 4);
+        make_my_device("/dev/block/loop5", 1, 7, 5);
+        make_my_device("/dev/block/loop6", 1, 7, 6);
+        make_my_device("/dev/block/loop7", 1, 7, 7);
+        make_my_device("/dev/block/mmcblk0", 1, 179, 0);
+        make_my_device("/dev/block/mmcblk0p1", 1, 179, 1);
+        make_my_device("/dev/block/mmcblk1", 1, 179, 8);
+        make_my_device("/dev/block/mmcblk1p1", 1, 179, 9);
+        make_my_device("/dev/block/mmcblk1p2", 1, 179, 10);
+        make_my_device("/dev/block/mmcblk1boot0", 1, 179, 16);
+        make_my_device("/dev/block/mmcblk1boot0", 1, 179, 24);
+
+        mkdir("/dev/graphics", 0777);
+        make_my_device("/dev/graphics/fb0", 0, 29, 0);
+    }
+#endif
+    // end psw0523
 
     if (stat(coldboot_done, &info) < 0) {
         t0 = get_usecs();

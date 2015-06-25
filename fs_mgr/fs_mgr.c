@@ -123,6 +123,8 @@ static void check_fs(char *blk_device, char *fs_type, char *target)
          * Some system images do not have e2fsck for licensing reasons
          * (e.g. recent SDK system images). Detect these and skip the check.
          */
+        // psw0523 fix
+#if 0
         if (access(E2FSCK_BIN, X_OK)) {
             INFO("Not running %s on %s (executable not in system image)\n",
                  E2FSCK_BIN, blk_device);
@@ -138,6 +140,7 @@ static void check_fs(char *blk_device, char *fs_type, char *target)
                 ERROR("Failed trying to run %s\n", E2FSCK_BIN);
             }
         }
+#endif
     } else if (!strcmp(fs_type, "f2fs")) {
             char *f2fs_fsck_argv[] = {
                     F2FS_FSCK_BIN,
@@ -285,10 +288,13 @@ static int mount_with_alternatives(struct fstab *fstab, int start_idx, int *end_
                 continue;
             }
 
+            // psw0523 fix
+#if 0
             if (fstab->recs[i].fs_mgr_flags & MF_CHECK) {
                 check_fs(fstab->recs[i].blk_device, fstab->recs[i].fs_type,
                          fstab->recs[i].mount_point);
             }
+#endif
             if (!__mount(fstab->recs[i].blk_device, fstab->recs[i].mount_point, &fstab->recs[i])) {
                 *attempted_idx = i;
                 mounted = 1;
@@ -462,6 +468,8 @@ int fs_mgr_do_mount(struct fstab *fstab, char *n_name, char *n_blk_device,
             wait_for_file(n_blk_device, WAIT_TIMEOUT);
         }
 
+        // psw0523 fix
+#if 0
         if (fstab->recs[i].fs_mgr_flags & MF_CHECK) {
             check_fs(n_blk_device, fstab->recs[i].fs_type,
                      fstab->recs[i].mount_point);
@@ -474,6 +482,7 @@ int fs_mgr_do_mount(struct fstab *fstab, char *n_name, char *n_blk_device,
                 continue;
             }
         }
+#endif
 
         /* Now mount it where requested */
         if (tmp_mount_point) {
