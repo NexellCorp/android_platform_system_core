@@ -1055,7 +1055,7 @@ void device_init(void)
     fcntl(device_fd, F_SETFL, O_NONBLOCK);
 
     // psw0523 test
-#if 1
+#if 0
     {
         fd = open(coldboot_done, O_WRONLY|O_CREAT, 0000);
         close(fd);

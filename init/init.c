@@ -1051,12 +1051,12 @@ int main(int argc, char **argv)
          * let the rc file figure out the rest.
          */
     // psw0523 fix
-    /*mkdir("/dev", 0755);*/
-    /*mkdir("/proc", 0755);*/
-    /*mkdir("/sys", 0755);*/
+    mkdir("/dev", 0755);
+    mkdir("/proc", 0755);
+    mkdir("/sys", 0755);
 
     // psw0523 fix
-    /*mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "mode=0755");*/
+    mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "mode=0755");
     mkdir("/dev/pts", 0755);
     mkdir("/dev/socket", 0755);
     mount("devpts", "/dev/pts", "devpts", 0, NULL);
