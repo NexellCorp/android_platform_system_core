@@ -1055,7 +1055,7 @@ void device_init(void)
     fcntl(device_fd, F_SETFL, O_NONBLOCK);
 
     // psw0523 test
-#if 0
+#if 1
     {
         fd = open(coldboot_done, O_WRONLY|O_CREAT, 0000);
         close(fd);
@@ -1094,6 +1094,7 @@ void device_init(void)
         chmod("/dev/video3", 0777);
         chmod("/dev/video4", 0777);
         chmod("/dev/video5", 0777);
+        chmod("/dev/video6", 0777);
         chmod("/dev/vr", 0777);
         chmod("/dev/zero", 0777);
         chmod("/dev/input/event0", 0777);
@@ -1101,6 +1102,14 @@ void device_init(void)
         chmod("/dev/bus/usb/001/001", 0777);
         chmod("/dev/bus/usb/001/002", 0777);
         chmod("/dev/bus/usb/002/001", 0777);
+
+        chmod("/dev/ttyAMA0", 0777);
+        chmod("/dev/ttyAMA1", 0777);
+        chmod("/dev/ttyAMA2", 0777);
+        chmod("/dev/ttyAMA3", 0777);
+        chmod("/dev/ttyAMA4", 0777);
+        chmod("/dev/ttyAMA5", 0777);
+        chmod("/dev/mtv350", 0777);
 
         chmod("/dev/snd/controlC0", 0777);
         chmod("/dev/snd/controlC1", 0777);
