@@ -58,6 +58,7 @@ typedef enum {
                                         */
     AUDIO_STREAM_DTMF             = 8,
     AUDIO_STREAM_TTS              = 9,
+	AUDIO_STREAM_EXT_SPEAKER      = 10,
 
     AUDIO_STREAM_CNT,
     AUDIO_STREAM_MAX              = AUDIO_STREAM_CNT - 1,
@@ -96,6 +97,7 @@ typedef enum {
     AUDIO_USAGE_ASSISTANCE_NAVIGATION_GUIDANCE     = 12,
     AUDIO_USAGE_ASSISTANCE_SONIFICATION            = 13,
     AUDIO_USAGE_GAME                               = 14,
+	AUDIO_USAGE_EXT_SPEAKER                        = 15,
 
     AUDIO_USAGE_CNT,
     AUDIO_USAGE_MAX                                = AUDIO_USAGE_CNT - 1,
