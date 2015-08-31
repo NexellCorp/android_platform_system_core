@@ -1055,7 +1055,7 @@ void device_init(void)
     fcntl(device_fd, F_SETFL, O_NONBLOCK);
 
     // psw0523 test
-#if 1
+#if 0
     {
         fd = open(coldboot_done, O_WRONLY|O_CREAT, 0000);
         close(fd);
@@ -1099,6 +1099,8 @@ void device_init(void)
         chmod("/dev/zero", 0777);
         chmod("/dev/input/event0", 0777);
         chmod("/dev/input/event1", 0777);
+        chmod("/dev/input/event2", 0777);
+        chmod("/dev/input/event3", 0777);
         chmod("/dev/bus/usb/001/001", 0777);
         chmod("/dev/bus/usb/001/002", 0777);
         chmod("/dev/bus/usb/002/001", 0777);

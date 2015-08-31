@@ -1051,7 +1051,7 @@ int main(int argc, char **argv)
          * let the rc file figure out the rest.
          */
     // psw0523 fix
-#if 0
+#if 1
     mkdir("/dev", 0755);
     mkdir("/proc", 0755);
     mkdir("/sys", 0755);
