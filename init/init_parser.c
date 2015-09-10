@@ -475,6 +475,41 @@ void service_for_each(void (*func)(struct service *svc))
     }
 }
 
+// psw0523 for service parallel working
+#include <pthread.h>
+
+struct service_run_ctx {
+    struct service *svc;
+    void (*func)(struct service *svc);
+};
+
+static void *_service_run_thread(void *data)
+{
+    struct service_run_ctx *ctx = (struct service_run_ctx *)data;
+    ERROR("%s: handle class %s, name %s\n", __func__, ctx->svc->classname, ctx->svc->name);
+    ctx->func(ctx->svc);
+    return NULL;
+}
+
+static void _handle_service_by_thread(struct service *svc, void (*func)(struct service *svc))
+{
+    struct service_run_ctx *ctx = (struct service_run_ctx *)malloc(sizeof(struct service_run_ctx));
+    if (!ctx) {
+        ERROR("%s: can't alloc service run context for %s\n", __func__, svc->classname);
+        func(svc);
+    } else {
+        ctx->svc = svc;
+        ctx->func = func;
+    }
+    pthread_t id;
+    int ret = pthread_create(&id, NULL, _service_run_thread, ctx);
+    if (ret) {
+        ERROR("%s: failed to pthread_create for %s\n", __func__, svc->classname);
+        func(svc);
+    }
+}
+// end psw0523
+
 void service_for_each_class(const char *classname,
                             void (*func)(struct service *svc))
 {
@@ -483,7 +518,13 @@ void service_for_each_class(const char *classname,
     list_for_each(node, &service_list) {
         svc = node_to_item(node, struct service, slist);
         if (!strcmp(svc->classname, classname)) {
-            func(svc);
+            // psw0523 patch
+            /*ERROR("%s: classname %s\n", __func__, classname);*/
+            if ((!strncmp(svc->classname, "core", 4)) || (!strncmp(svc->classname, "main", 4))) {
+                _handle_service_by_thread(svc, func);
+            } else {
+                func(svc);
+            }
         }
     }
 }
