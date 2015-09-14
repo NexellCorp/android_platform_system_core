@@ -486,7 +486,7 @@ struct service_run_ctx {
 static void *_service_run_thread(void *data)
 {
     struct service_run_ctx *ctx = (struct service_run_ctx *)data;
-    ERROR("%s: handle class %s, name %s\n", __func__, ctx->svc->classname, ctx->svc->name);
+    /* ERROR("%s: handle class %s, name %s\n", __func__, ctx->svc->classname, ctx->svc->name); */
     ctx->func(ctx->svc);
     return NULL;
 }
