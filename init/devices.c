@@ -1110,6 +1110,8 @@ void device_init(void)
         chmod("/dev/ttyAMA4", 0777);
         chmod("/dev/ttyAMA5", 0777);
         chmod("/dev/mtv350", 0777);
+		chmod("/dev/mtv818_av", 0777);
+		chmod("/dev/mtv818_tpeg", 0777);
 
         chmod("/dev/snd/controlC0", 0777);
         chmod("/dev/snd/controlC1", 0777);
