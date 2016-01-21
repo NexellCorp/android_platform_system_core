@@ -89,6 +89,8 @@ struct {
     { "log.",             AID_SHELL,    0 },
     { "service.adb.root", AID_SHELL,    0 },
     { "service.adb.tcp.port", AID_SHELL,    0 },
+    { "persist.",     AID_SYSTEM,   0 },
+    { "ctrl.",     AID_SYSTEM,   0 },
     { "persist.sys.",     AID_SYSTEM,   0 },
     { "persist.service.", AID_SYSTEM,   0 },
     { "persist.security.", AID_SYSTEM,   0 },
