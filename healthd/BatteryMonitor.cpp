@@ -239,7 +239,7 @@ bool BatteryMonitor::update(void) {
             }
         }
     }
-
+#if 0 //Remove the healthd log
     logthis = !healthd_board_battery_update(&props);
 
     if (logthis) {
@@ -264,6 +264,7 @@ bool BatteryMonitor::update(void) {
                   props.chargerUsbOnline ? "u" : "",
                   props.chargerWirelessOnline ? "w" : "");
     }
+#endif
 
     if (mBatteryPropertiesRegistrar != NULL)
         mBatteryPropertiesRegistrar->notifyListeners(props);
