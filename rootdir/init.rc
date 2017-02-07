@@ -549,7 +549,7 @@ service drm /system/bin/drmserver
     group drm system inet drmrpc
 
 service media /system/bin/mediaserver
-    class main
+    class core
     user media
     group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc mediadrm
     ioprio rt 4
@@ -576,7 +576,7 @@ service bootanim /system/bin/bootanimation
     oneshot
 
 service installd /system/bin/installd
-    class main
+    class core
     socket installd stream 600 system system
 
 service racoon /system/bin/racoon
