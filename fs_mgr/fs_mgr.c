@@ -106,6 +106,15 @@ static void check_fs(char *blk_device, char *fs_type, char *target)
         blk_device
     };
 
+#ifdef QUICKBOOT
+    /* checking mask file that is marked by recovery */
+    char *mask_file = "/cache/recovery/factory_mask";
+    if (access(mask_file,F_OK) == -1) {
+        INFO("normal boot,do not check fs\n");
+        return;
+    }
+#endif
+
     /* Check for the types of filesystems we know how to check */
     if (!strcmp(fs_type, "ext2") || !strcmp(fs_type, "ext3") || !strcmp(fs_type, "ext4")) {
         /*
@@ -179,6 +188,10 @@ static void check_fs(char *blk_device, char *fs_type, char *target)
             ERROR("Failed trying to run %s\n", F2FS_FSCK_BIN);
         }
     }
+
+#ifdef QUICKBOOT
+    remove(mask_file);
+#endif
 
     return;
 }

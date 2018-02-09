@@ -31,6 +31,9 @@ LOCAL_MODULE:= libfs_mgr
 LOCAL_STATIC_LIBRARIES := $(common_static_libraries)
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)/include
 LOCAL_CFLAGS := -Werror
+ifeq ($(QUICKBOOT), 1)
+LOCAL_CFLAGS += -DQUICKBOOT
+endif
 ifneq (,$(filter userdebug,$(TARGET_BUILD_VARIANT)))
 LOCAL_CFLAGS += -DALLOW_ADBD_DISABLE_VERITY=1
 endif
