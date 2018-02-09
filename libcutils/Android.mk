@@ -126,6 +126,9 @@ ifneq ($(ENABLE_SCHEDBOOST),)
 LOCAL_CFLAGS += -DUSE_SCHEDBOOST
 endif
 LOCAL_CFLAGS += -Werror -Wall -Wextra -std=gnu90
+ifeq ($(QUICKBOOT), 1)
+LOCAL_CFLAGS += -DQUICKBOOT
+endif
 LOCAL_CLANG := true
 LOCAL_SANITIZE := integer
 include $(BUILD_STATIC_LIBRARY)

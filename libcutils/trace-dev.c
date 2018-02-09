@@ -166,6 +166,7 @@ void atrace_update_tags()
 
 static void atrace_init_once()
 {
+#ifndef QUICKBOOT
     atrace_marker_fd = open("/sys/kernel/debug/tracing/trace_marker", O_WRONLY | O_CLOEXEC);
     if (atrace_marker_fd == -1) {
         ALOGE("Error opening trace file: %s (%d)", strerror(errno), errno);
@@ -176,6 +177,9 @@ static void atrace_init_once()
     atrace_enabled_tags = atrace_get_property();
 
 done:
+#else
+    atrace_enabled_tags = 0;
+#endif
     atomic_store_explicit(&atrace_is_ready, true, memory_order_release);
 }
 
