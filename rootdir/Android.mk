@@ -5,7 +5,11 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := init.rc
+ifeq ($(QUICKBOOT), 1)
+LOCAL_SRC_FILES := init.rc.quickboot
+else
 LOCAL_SRC_FILES := $(LOCAL_MODULE)
+endif
 LOCAL_MODULE_CLASS := ETC
 LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT)
 
