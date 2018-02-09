@@ -105,7 +105,9 @@ LOCAL_CFLAGS := $(bootstat_cflags)
 LOCAL_C_INCLUDES := $(bootstat_c_includes)
 LOCAL_SHARED_LIBRARIES := $(bootstat_shared_libs)
 LOCAL_STATIC_LIBRARIES := libbootstat
+ifneq ($(QUICKBOOT), 1)
 LOCAL_INIT_RC := bootstat.rc
+endif
 LOCAL_SRC_FILES := $(bootstat_src_files)
 # Clang is required because of C++14
 LOCAL_CLANG := true
