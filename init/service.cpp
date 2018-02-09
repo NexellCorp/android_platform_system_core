@@ -812,7 +812,7 @@ bool ServiceManager::ReapOneProcess() {
 
     if (WIFEXITED(status)) {
 #ifdef QUICKBOOT
-        ERROR("%s exited with status %d\n", name.c_str(), WEXITSTATUS(status));
+        ERROR("\n%s exited with status %d\n", name.c_str(), WEXITSTATUS(status));
 #else
         NOTICE("%s exited with status %d\n", name.c_str(), WEXITSTATUS(status));
 #endif
