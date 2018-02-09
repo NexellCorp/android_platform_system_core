@@ -610,7 +610,7 @@ service healthd /sbin/healthd
 
 service console /system/bin/sh
     class late_start
-    root
+    console
     disabled
     user shell
     group shell log readproc
