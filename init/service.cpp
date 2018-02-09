@@ -22,6 +22,9 @@
 #include <sys/wait.h>
 #include <termios.h>
 #include <unistd.h>
+#ifdef QUICKBOOT
+#include <sched.h>
+#endif
 
 #include <selinux/selinux.h>
 
@@ -389,6 +392,19 @@ bool Service::Start() {
 
     pid_t pid = fork();
     if (pid == 0) {
+#ifdef QUICKBOOT
+        if (!strcmp("servicemanager", name_.c_str()) ||
+            !strcmp("surfaceflinger", name_.c_str()) ||
+            !strcmp("zygote", name_.c_str()) ||
+            !strcmp("bootanim", name_.c_str())) {
+            struct sched_param sched_param = {
+                .sched_priority = 2,
+            };
+
+            sched_setscheduler(0, SCHED_FIFO, &sched_param);
+        }
+#endif
+
         umask(077);
 
         for (const auto& ei : envvars_) {
@@ -778,7 +794,9 @@ bool ServiceManager::ReapOneProcess() {
     if (pid == 0) {
         return false;
     } else if (pid == -1) {
+#ifndef QUICKBOOT
         ERROR("waitpid failed: %s\n", strerror(errno));
+#endif
         return false;
     }
 
@@ -793,7 +811,11 @@ bool ServiceManager::ReapOneProcess() {
     }
 
     if (WIFEXITED(status)) {
+#ifdef QUICKBOOT
+        ERROR("%s exited with status %d\n", name.c_str(), WEXITSTATUS(status));
+#else
         NOTICE("%s exited with status %d\n", name.c_str(), WEXITSTATUS(status));
+#endif
     } else if (WIFSIGNALED(status)) {
         NOTICE("%s killed by signal %d\n", name.c_str(), WTERMSIG(status));
     } else if (WIFSTOPPED(status)) {

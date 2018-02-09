@@ -52,6 +52,10 @@ LOCAL_SRC_FILES:= \
     service.cpp \
     util.cpp \
 
+ifeq ($(QUICKBOOT), 1)
+LOCAL_CPPFLAGS += -DQUICKBOOT
+endif
+
 LOCAL_STATIC_LIBRARIES := libbase libselinux
 LOCAL_MODULE := libinit
 LOCAL_SANITIZE := integer
@@ -76,6 +80,10 @@ LOCAL_MODULE:= init
 LOCAL_C_INCLUDES += \
     system/extras/ext4_utils \
     system/core/mkbootimg
+
+ifeq ($(QUICKBOOT), 1)
+LOCAL_CPPFLAGS += -DQUICKBOOT
+endif
 
 LOCAL_FORCE_STATIC_EXECUTABLE := true
 LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT)

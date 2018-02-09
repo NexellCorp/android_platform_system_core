@@ -189,6 +189,7 @@ static int wait_for_coldboot_done_action(const std::vector<std::string>& args) {
  * time. We do not reboot or halt on failures, as this is a best-effort
  * attempt.
  */
+#ifndef QUICKBOOT
 static int mix_hwrng_into_linux_rng_action(const std::vector<std::string>& args)
 {
     int result = -1;
@@ -250,6 +251,7 @@ ret:
     }
     return result;
 }
+#endif
 
 static void security_failure() {
     ERROR("Security failure; rebooting into recovery mode...\n");
@@ -363,6 +365,7 @@ static int console_init_action(const std::vector<std::string>& args)
         have_console = 1;
     close(fd);
 
+#ifndef QUICKBOOT
     fd = open("/dev/tty0", O_WRONLY | O_CLOEXEC);
     if (fd >= 0) {
         const char *msg;
@@ -384,6 +387,7 @@ static int console_init_action(const std::vector<std::string>& args)
         write(fd, msg, strlen(msg));
         close(fd);
     }
+#endif
 
     return 0;
 }
@@ -626,7 +630,11 @@ int main(int argc, char** argv) {
     klog_init();
     klog_set_level(KLOG_NOTICE_LEVEL);
 
+#ifdef QUICKBOOT
+    ERROR("init %s started!\n", is_first_stage ? "first stage" : "second stage");
+#else
     NOTICE("init %s started!\n", is_first_stage ? "first stage" : "second stage");
+#endif
 
     if (!is_first_stage) {
         // Indicate that booting is in progress to background fw loaders, etc.
@@ -700,7 +708,9 @@ int main(int argc, char** argv) {
     // Queue an action that waits for coldboot done so we know ueventd has set up all of /dev...
     am.QueueBuiltinAction(wait_for_coldboot_done_action, "wait_for_coldboot_done");
     // ... so that we can start queuing up actions that require stuff from /dev.
+#ifndef QUICKBOOT
     am.QueueBuiltinAction(mix_hwrng_into_linux_rng_action, "mix_hwrng_into_linux_rng");
+#endif
     am.QueueBuiltinAction(set_mmap_rnd_bits_action, "set_mmap_rnd_bits");
     am.QueueBuiltinAction(keychord_init_action, "keychord_init");
     am.QueueBuiltinAction(console_init_action, "console_init");
@@ -710,7 +720,9 @@ int main(int argc, char** argv) {
 
     // Repeat mix_hwrng_into_linux_rng in case /dev/hw_random or /dev/random
     // wasn't ready immediately after wait_for_coldboot_done
+#ifndef QUICKBOOT
     am.QueueBuiltinAction(mix_hwrng_into_linux_rng_action, "mix_hwrng_into_linux_rng");
+#endif
 
     // Don't mount filesystems or start core system services in charger mode.
     std::string bootmode = property_get("ro.bootmode");
