@@ -392,18 +392,6 @@ bool Service::Start() {
 
     pid_t pid = fork();
     if (pid == 0) {
-#ifdef QUICKBOOT
-        if (!strcmp("servicemanager", name_.c_str()) ||
-            !strcmp("surfaceflinger", name_.c_str()) ||
-            !strcmp("zygote", name_.c_str()) ||
-            !strcmp("bootanim", name_.c_str())) {
-            struct sched_param sched_param = {
-                .sched_priority = 2,
-            };
-
-            sched_setscheduler(0, SCHED_FIFO, &sched_param);
-        }
-#endif
 
         umask(077);
 
