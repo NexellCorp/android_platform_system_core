@@ -170,6 +170,17 @@ LOCAL_SRC_FILES := diagnose_usb.cpp
 LOCAL_STATIC_LIBRARIES := libbase
 include $(BUILD_HOST_STATIC_LIBRARY)
 
+# libdiagnose_usb
+# =========================================================
+include $(CLEAR_VARS)
+LOCAL_MODULE := libdiagnose_usb_bdcl
+LOCAL_CFLAGS := $(LIBADB_CFLAGS) -DBDCL
+LOCAL_SRC_FILES := diagnose_usb.cpp
+# Even though we're building a static library (and thus there's no link step for
+# this to take effect), this adds the includes to our path.
+LOCAL_STATIC_LIBRARIES := libbase
+include $(BUILD_STATIC_LIBRARY)
+
 # adb_test
 # =========================================================
 
@@ -295,6 +306,76 @@ LOCAL_CXX_STL := libc++_static
 LOCAL_SHARED_LIBRARIES :=
 
 include $(BUILD_HOST_EXECUTABLE)
+
+# libbdcl
+include $(CLEAR_VARS)
+LOCAL_CLANG := true
+LOCAL_MODULE := libbdcl
+LOCAL_CFLAGS := $(LIBADB_CFLAGS) -DADB_HOST=1 -DADB_HOST_ON_TARGET=1
+LOCAL_CFLAGS += $(LIBADB_linux_CFLAGS) -DBDCL
+LOCAL_SRC_FILES := \
+    $(LIBADB_SRC_FILES) \
+    adb_auth_host.cpp \
+
+LOCAL_SRC_FILES += $(LIBADB_linux_SRC_FILES)
+
+LOCAL_SANITIZE := $(adb_target_sanitize)
+
+# Even though we're building a static library (and thus there's no link step for
+# this to take effect), this adds the includes to our path.
+LOCAL_STATIC_LIBRARIES := libcrypto_static libbase
+
+include $(BUILD_STATIC_LIBRARY)
+
+# bdcl in target
+# =========================================================
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := \
+    adb_client.cpp \
+    bugreport.cpp \
+    client/main.cpp \
+    console.cpp \
+    commandline.cpp \
+    file_sync_client.cpp \
+    line_printer.cpp \
+    services.cpp \
+    shell_service_protocol.cpp \
+
+LOCAL_C_INCLUDES += system/core/base/include
+
+LOCAL_CFLAGS += \
+    $(ADB_COMMON_CFLAGS) \
+    -D_GNU_SOURCE \
+    -DADB_HOST=1 \
+    -DADB_HOST_ON_TARGET=1 \
+	-DBDCL
+
+LOCAL_CFLAGS += \
+    $(ADB_COMMON_linux_CFLAGS) \
+
+LOCAL_MODULE := bdcl
+LOCAL_MODULE_TAGS := debug
+
+LOCAL_SANITIZE := $(adb_target_sanitize)
+LOCAL_STATIC_LIBRARIES += \
+    libbdcl \
+    libbase \
+    libcrypto_static \
+    libdiagnose_usb_bdcl \
+    liblog \
+
+# Don't use libcutils on Windows.
+LOCAL_STATIC_LIBRARIES += libcutils
+
+LOCAL_CXX_STL := libc++_static
+
+# Don't add anything here, we don't want additional shared dependencies
+# on the host adb tool, and shared libraries that link against libc++
+# will violate ODR
+LOCAL_SHARED_LIBRARIES :=
+
+include $(BUILD_EXECUTABLE)
 
 $(call dist-for-goals,dist_files sdk win_sdk,$(LOCAL_BUILT_MODULE))
 ifdef HOST_CROSS_OS

@@ -239,6 +239,10 @@ bool set_file_block_mode(int fd, bool block) {
 }
 #endif
 
+#ifdef BDCL
+const char *my_home = "/data/misc/carlife/adb";
+#endif
+
 std::string adb_get_homedir_path(bool check_env_first) {
 #ifdef _WIN32
     if (check_env_first) {
@@ -259,10 +263,14 @@ std::string adb_get_homedir_path(bool check_env_first) {
     }
     return home_str;
 #else
+#ifdef BDCL
+    return my_home;
+#else
     if (const char* const home = getenv("HOME")) {
         return home;
     }
     return {};
+#endif
 #endif
 }
 

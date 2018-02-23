@@ -44,12 +44,14 @@ static const char* GetUdevProblem() {
         return nullptr;
     }
 
+#ifndef BDCL
     // getgroups(2) indicates that the group_member() may not check the egid so we check it
     // additionally just to be sure.
     if (group_member(plugdev_group->gr_gid) || getegid() == plugdev_group->gr_gid) {
         // The user is in plugdev so the problem is likely with the udev rules.
         return "verify udev rules";
     }
+#endif
     return "udev requires plugdev group membership";
 #else
     return nullptr;
