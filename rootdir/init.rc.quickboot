@@ -103,7 +103,7 @@ on init
     # cpu cores.
     write /proc/sys/kernel/sched_child_runs_first 0
 
-    write /proc/sys/kernel/randomize_va_space 2
+    write /proc/sys/kernel/randomize_va_space 0
     write /proc/sys/kernel/kptr_restrict 2
     write /proc/sys/vm/mmap_min_addr 32768
     write /proc/sys/net/unix/max_dgram_qlen 600
@@ -142,24 +142,24 @@ on init
     # this ensures that the cpusets are present and usable, but the device's
     # init.rc must actually set the correct cpus
     mkdir /dev/cpuset/foreground
-    write /dev/cpuset/foreground/cpus 0
+    write /dev/cpuset/foreground/cpus 0-3
     write /dev/cpuset/foreground/mems 0
     mkdir /dev/cpuset/foreground/boost
     write /dev/cpuset/foreground/boost/cpus 0
     write /dev/cpuset/foreground/boost/mems 0
     mkdir /dev/cpuset/background
-    write /dev/cpuset/background/cpus 0
+    write /dev/cpuset/background/cpus 0-3
     write /dev/cpuset/background/mems 0
 
     # system-background is for system tasks that should only run on
     # little cores, not on bigs
     # to be used only by init, so don't change system-bg permissions
     mkdir /dev/cpuset/system-background
-    write /dev/cpuset/system-background/cpus 0
+    write /dev/cpuset/system-background/cpus 0-3
     write /dev/cpuset/system-background/mems 0
 
     mkdir /dev/cpuset/top-app
-    write /dev/cpuset/top-app/cpus 0
+    write /dev/cpuset/top-app/cpus 0-3
     write /dev/cpuset/top-app/mems 0
 
     # change permissions for all cpusets we'll touch at runtime
@@ -284,14 +284,9 @@ on post-fs
     # Mount default storage into root namespace
     mount none /mnt/runtime/default /storage slave bind rec
 
-    # Make sure /sys/kernel/debug (if present) is labeled properly
-    restorecon_recursive /sys/kernel/debug
-
     # We chown/chmod /cache again so because mount is run as root + defaults
     chown system cache /cache
     chmod 0770 /cache
-    # We restorecon /cache in case the cache partition has been reset.
-    restorecon_recursive /cache
 
     # Create /cache/recovery in case it's not there. It'll also fix the odd
     # permissions if created by the recovery system.
@@ -331,19 +326,12 @@ on post-fs-data
 
     # start debuggerd to make debugging early-boot crashes easier.
     start debuggerd
-    start debuggerd64
 
     # Make sure we have the device encryption key.
     start vold
     installkey /data
 
-    # Start bootcharting as soon as possible after the data partition is
-    # mounted to collect more data.
-    mkdir /data/bootchart 0755 shell shell
-    bootchart_init
-
-    # Avoid predictable entropy pool. Carry over entropy from previous boot.
-    copy /data/system/entropy.dat /dev/urandom
+    mkdir /data/system 0775 system system
 
     # create basic filesystem structure
     mkdir /data/misc 01771 system misc
