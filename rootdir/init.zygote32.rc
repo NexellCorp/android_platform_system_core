@@ -1,6 +1,7 @@
 service zygote /system/bin/app_process -Xzygote /system/bin --zygote --start-system-server
     class main
     priority -20
+    ioprio rt 0
     user root
     group root readproc reserved_disk
     socket zygote stream 660 root system
