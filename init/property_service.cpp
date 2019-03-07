@@ -686,16 +686,9 @@ void property_load_boot_defaults() {
         }
     }
     load_properties_from_file("/product/build.prop", NULL);
-    load_properties_from_file("/odm/default.prop", NULL);
     load_properties_from_file("/vendor/default.prop", NULL);
 
     update_sys_usb_config();
-}
-
-static void load_override_properties() {
-    if (ALLOW_LOCAL_PROP_OVERRIDE) {
-        load_properties_from_file("/data/local.prop", NULL);
-    }
 }
 
 /* When booting an encrypted system, /data is not mounted when the
@@ -715,7 +708,6 @@ void load_persist_props(void) {
         if (++num_calls == 1) return;
     }
 
-    load_override_properties();
     /* Read persistent properties after all default values have been loaded. */
     auto persistent_properties = LoadPersistentProperties();
     for (const auto& persistent_property_record : persistent_properties.properties()) {
@@ -725,43 +717,9 @@ void load_persist_props(void) {
     property_set("ro.persistent_properties.ready", "true");
 }
 
-void load_recovery_id_prop() {
-    std::unique_ptr<fstab, decltype(&fs_mgr_free_fstab)> fstab(fs_mgr_read_fstab_default(),
-                                                               fs_mgr_free_fstab);
-    if (!fstab) {
-        PLOG(ERROR) << "unable to read default fstab";
-        return;
-    }
-
-    fstab_rec* rec = fs_mgr_get_entry_for_mount_point(fstab.get(), RECOVERY_MOUNT_POINT);
-    if (rec == NULL) {
-        LOG(ERROR) << "/recovery not specified in fstab";
-        return;
-    }
-
-    int fd = open(rec->blk_device, O_RDONLY);
-    if (fd == -1) {
-        PLOG(ERROR) << "error opening block device " << rec->blk_device;
-        return;
-    }
-
-    boot_img_hdr hdr;
-    if (android::base::ReadFully(fd, &hdr, sizeof(hdr))) {
-        std::string hex = bytes_to_hex(reinterpret_cast<uint8_t*>(hdr.id), sizeof(hdr.id));
-        property_set("ro.recovery_id", hex);
-    } else {
-        PLOG(ERROR) << "error reading /recovery";
-    }
-
-    close(fd);
-}
-
 void load_system_props() {
     load_properties_from_file("/system/build.prop", NULL);
-    load_properties_from_file("/odm/build.prop", NULL);
     load_properties_from_file("/vendor/build.prop", NULL);
-    load_properties_from_file("/factory/factory.prop", "ro.*");
-    load_recovery_id_prop();
 }
 
 static int SelinuxAuditCallback(void* data, security_class_t /*cls*/, char* buf, size_t len) {
