@@ -584,6 +584,14 @@ static Result<Success> do_mount_all(const BuiltinArguments& args) {
         }
     }
 
+    int my_fd = open("/data/dalvik-cache/arm/system@framework@boot.art", O_RDONLY);
+    if (my_fd < 0) {
+        ActionManager::GetInstance().QueueEventTrigger("prepare-fs-data");
+        ActionManager::GetInstance().QueueEventTrigger("init-user");
+    } else {
+        close(my_fd);
+    }
+
     return Success();
 }
 
@@ -1023,7 +1031,7 @@ static Result<Success> do_installkey(const BuiltinArguments& args) {
 static Result<Success> do_init_user0(const BuiltinArguments& args) {
     return ExecWithRebootOnFailure(
         "init_user0_failed",
-        {{"exec", "/system/bin/vdc", "--wait", "cryptfs", "init_user0"}, args.context});
+        {{"exec", "/system/bin/vdc", "cryptfs", "init_user0"}, args.context});
 }
 
 // Builtin-function-map start
