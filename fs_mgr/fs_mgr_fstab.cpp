@@ -638,43 +638,6 @@ err:
     return NULL;
 }
 
-/* merges fstab entries from both a and b, then returns the merged result.
- * note that the caller should only manage the return pointer without
- * doing further memory management for the two inputs, i.e. only need to
- * frees up memory of the return value without touching a and b. */
-static struct fstab *in_place_merge(struct fstab *a, struct fstab *b)
-{
-    if (!a && !b) return nullptr;
-    if (!a) return b;
-    if (!b) return a;
-
-    int total_entries = a->num_entries + b->num_entries;
-    a->recs = static_cast<struct fstab_rec *>(realloc(
-        a->recs, total_entries * (sizeof(struct fstab_rec))));
-    if (!a->recs) {
-        LERROR << __FUNCTION__ << "(): failed to allocate fstab recs";
-        // If realloc() fails the original block is left untouched;
-        // it is not freed or moved. So we have to free both a and b here.
-        fs_mgr_free_fstab(a);
-        fs_mgr_free_fstab(b);
-        return nullptr;
-    }
-
-    for (int i = a->num_entries, j = 0; i < total_entries; i++, j++) {
-        // Copy the structs by assignment.
-        a->recs[i] = b->recs[j];
-    }
-
-    // We can't call fs_mgr_free_fstab because a->recs still references the
-    // memory allocated by strdup.
-    free(b->recs);
-    free(b->fstab_filename);
-    free(b);
-
-    a->num_entries = total_entries;
-    return a;
-}
-
 /* Extracts <device>s from the by-name symlinks specified in a fstab:
  *   /dev/block/<type>/<device>/by-name/<partition>
  *
@@ -769,54 +732,11 @@ struct fstab *fs_mgr_read_fstab_dt()
 }
 
 /*
- * Identify path to fstab file. Lookup is based on pattern
- * fstab.<hardware>, fstab.<hardware.platform> in folders
-   /odm/etc, vendor/etc, or /.
- */
-static std::string get_fstab_path()
-{
-    for (const char* prop : {"hardware", "hardware.platform"}) {
-        std::string hw;
-
-        if (!fs_mgr_get_boot_config(prop, &hw)) continue;
-
-        for (const char* prefix : {"/odm/etc/fstab.", "/vendor/etc/fstab.", "/fstab."}) {
-            std::string fstab_path = prefix + hw;
-            if (access(fstab_path.c_str(), F_OK) == 0) {
-                return fstab_path;
-            }
-        }
-    }
-
-    return std::string();
-}
-
-/*
  * loads the fstab file and combines with fstab entries passed in from device tree.
  */
 struct fstab *fs_mgr_read_fstab_default()
 {
-    std::string default_fstab;
-
-    // Use different fstab paths for normal boot and recovery boot, respectively
-    if (access("/sbin/recovery", F_OK) == 0) {
-        default_fstab = "/etc/recovery.fstab";
-    } else {  // normal boot
-        default_fstab = get_fstab_path();
-    }
-
-    struct fstab* fstab = nullptr;
-    if (!default_fstab.empty()) {
-        fstab = fs_mgr_read_fstab(default_fstab.c_str());
-    } else {
-        LINFO << __FUNCTION__ << "(): failed to find device default fstab";
-    }
-
-    struct fstab* fstab_dt = fs_mgr_read_fstab_dt();
-
-    // combines fstab entries passed in from device tree with
-    // the ones found from default_fstab file
-    return in_place_merge(fstab_dt, fstab);
+    return fs_mgr_read_fstab_dt();
 }
 
 void fs_mgr_free_fstab(struct fstab *fstab)
