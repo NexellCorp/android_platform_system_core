@@ -231,17 +231,6 @@ DeviceHandler CreateDeviceHandler() {
 
     parser.ParseConfig("/ueventd.rc");
     parser.ParseConfig("/vendor/ueventd.rc");
-    parser.ParseConfig("/odm/ueventd.rc");
-
-    /*
-     * keep the current product name base configuration so
-     * we remain backwards compatible and allow it to override
-     * everything
-     * TODO: cleanup platform ueventd.rc to remove vendor specific
-     * device node entries (b/34968103)
-     */
-    std::string hardware = android::base::GetProperty("ro.hardware", "");
-    parser.ParseConfig("/ueventd." + hardware + ".rc");
 
     auto boot_devices = fs_mgr_get_boot_devices();
     return DeviceHandler(std::move(dev_permissions), std::move(sysfs_permissions),
