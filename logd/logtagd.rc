@@ -1,7 +1,7 @@
 #
 # logtagd event log tag service (debug only)
 #
-on post-fs-data
+on late_start
     mkdir /data/misc/logd 0700 logd log
     write /data/misc/logd/event-log-tags ""
     chown logd log /data/misc/logd/event-log-tags
