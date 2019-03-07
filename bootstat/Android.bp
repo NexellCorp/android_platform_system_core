@@ -67,13 +67,9 @@ cc_binary {
         "liblogcat",
         "libstatslog"
     ],
-    init_rc: ["bootstat.rc"],
     product_variables: {
         pdk: {
             enabled: false,
-        },
-        debuggable: {
-            init_rc: ["bootstat-debug.rc"],
         },
     },
     srcs: ["bootstat.cpp"],
