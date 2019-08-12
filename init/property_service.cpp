@@ -685,18 +685,22 @@ void property_load_boot_defaults() {
             load_properties_from_file("/default.prop", NULL);
         }
     }
+#ifndef QUICKBOOT
     load_properties_from_file("/product/build.prop", NULL);
     load_properties_from_file("/odm/default.prop", NULL);
+#endif
     load_properties_from_file("/vendor/default.prop", NULL);
 
     update_sys_usb_config();
 }
 
+#ifndef QUICKBOOT
 static void load_override_properties() {
     if (ALLOW_LOCAL_PROP_OVERRIDE) {
         load_properties_from_file("/data/local.prop", NULL);
     }
 }
+#endif
 
 /* When booting an encrypted system, /data is not mounted when the
  * property service is started, so any properties stored there are
@@ -715,7 +719,9 @@ void load_persist_props(void) {
         if (++num_calls == 1) return;
     }
 
+#ifndef QUICKBOOT
     load_override_properties();
+#endif
     /* Read persistent properties after all default values have been loaded. */
     auto persistent_properties = LoadPersistentProperties();
     for (const auto& persistent_property_record : persistent_properties.properties()) {
@@ -725,6 +731,7 @@ void load_persist_props(void) {
     property_set("ro.persistent_properties.ready", "true");
 }
 
+#ifndef QUICKBOOT
 void load_recovery_id_prop() {
     std::unique_ptr<fstab, decltype(&fs_mgr_free_fstab)> fstab(fs_mgr_read_fstab_default(),
                                                                fs_mgr_free_fstab);
@@ -755,13 +762,18 @@ void load_recovery_id_prop() {
 
     close(fd);
 }
+#endif
 
 void load_system_props() {
     load_properties_from_file("/system/build.prop", NULL);
+#ifndef QUICKBOOT
     load_properties_from_file("/odm/build.prop", NULL);
+#endif
     load_properties_from_file("/vendor/build.prop", NULL);
+#ifndef QUICKBOOT
     load_properties_from_file("/factory/factory.prop", "ro.*");
     load_recovery_id_prop();
+#endif
 }
 
 static int SelinuxAuditCallback(void* data, security_class_t /*cls*/, char* buf, size_t len) {

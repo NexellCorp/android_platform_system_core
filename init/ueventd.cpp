@@ -231,6 +231,7 @@ DeviceHandler CreateDeviceHandler() {
 
     parser.ParseConfig("/ueventd.rc");
     parser.ParseConfig("/vendor/ueventd.rc");
+#ifndef QUICKBOOT
     parser.ParseConfig("/odm/ueventd.rc");
 
     /*
@@ -242,6 +243,7 @@ DeviceHandler CreateDeviceHandler() {
      */
     std::string hardware = android::base::GetProperty("ro.hardware", "");
     parser.ParseConfig("/ueventd." + hardware + ".rc");
+#endif
 
     auto boot_devices = fs_mgr_get_boot_devices();
     return DeviceHandler(std::move(dev_permissions), std::move(sysfs_permissions),

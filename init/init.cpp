@@ -110,6 +110,7 @@ Parser CreateParser(ActionManager& action_manager, ServiceList& service_list) {
 static void LoadBootScripts(ActionManager& action_manager, ServiceList& service_list) {
     Parser parser = CreateParser(action_manager, service_list);
 
+#ifndef QUICKBOOT
     std::string bootscript = GetProperty("ro.boot.init_rc", "");
     if (bootscript.empty()) {
         parser.ParseConfig("/init.rc");
@@ -128,6 +129,15 @@ static void LoadBootScripts(ActionManager& action_manager, ServiceList& service_
     } else {
         parser.ParseConfig(bootscript);
     }
+#else
+    parser.ParseConfig("/init.rc");
+    if (!parser.ParseConfig("/system/etc/init")) {
+        late_import_paths.emplace_back("/system/etc/init");
+    }
+    if (!parser.ParseConfig("/vendor/etc/init")) {
+        late_import_paths.emplace_back("/vendor/etc/init");
+    }
+#endif
 }
 
 void register_epoll_handler(int fd, void (*fn)()) {
@@ -359,6 +369,7 @@ static void import_kernel_nv(const std::string& key, const std::string& value, b
     }
 }
 
+#ifndef QUICKBOOT
 static void export_oem_lock_status() {
     if (!android::base::GetBoolProperty("ro.oem_unlock_supported", false)) {
         return;
@@ -370,6 +381,7 @@ static void export_oem_lock_status() {
         property_set("ro.boot.flash.locked", value == "orange" ? "0" : "1");
     }
 }
+#endif
 
 static void export_kernel_boot_props() {
     struct {
@@ -699,7 +711,9 @@ int main(int argc, char** argv) {
     }
 
     property_load_boot_defaults();
+#ifndef QUICKBOOT
     export_oem_lock_status();
+#endif
     start_property_service();
     set_usb_controller();
 
@@ -722,7 +736,9 @@ int main(int argc, char** argv) {
     // Queue an action that waits for coldboot done so we know ueventd has set up all of /dev...
     am.QueueBuiltinAction(wait_for_coldboot_done_action, "wait_for_coldboot_done");
     // ... so that we can start queuing up actions that require stuff from /dev.
+#ifndef QUICKBOOT
     am.QueueBuiltinAction(MixHwrngIntoLinuxRngAction, "MixHwrngIntoLinuxRng");
+#endif
     am.QueueBuiltinAction(SetMmapRndBitsAction, "SetMmapRndBits");
     am.QueueBuiltinAction(SetKptrRestrictAction, "SetKptrRestrict");
     am.QueueBuiltinAction(keychord_init_action, "keychord_init");
@@ -735,6 +751,7 @@ int main(int argc, char** argv) {
     // wasn't ready immediately after wait_for_coldboot_done
     am.QueueBuiltinAction(MixHwrngIntoLinuxRngAction, "MixHwrngIntoLinuxRng");
 
+#ifndef QUICKBOOT
     // Don't mount filesystems or start core system services in charger mode.
     std::string bootmode = GetProperty("ro.bootmode", "");
     if (bootmode == "charger") {
@@ -742,6 +759,9 @@ int main(int argc, char** argv) {
     } else {
         am.QueueEventTrigger("late-init");
     }
+#else
+    am.QueueEventTrigger("late-init");
+#endif
 
     // Run all property triggers based on current state of the properties.
     am.QueueBuiltinAction(queue_property_triggers_action, "queue_property_triggers");
@@ -757,9 +777,13 @@ int main(int argc, char** argv) {
             }
         }
 
+#ifndef QUICKBOOT
         if (!(waiting_for_prop || Service::is_exec_service_running())) {
             am.ExecuteOneCommand();
         }
+#else
+        am.ExecuteOneCommand();
+#endif
         if (!(waiting_for_prop || Service::is_exec_service_running())) {
             if (!shutting_down) {
                 auto next_process_restart_time = RestartProcesses();

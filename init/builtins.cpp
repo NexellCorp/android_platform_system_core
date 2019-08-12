@@ -584,6 +584,16 @@ static Result<Success> do_mount_all(const BuiltinArguments& args) {
         }
     }
 
+#ifdef QUICKBOOT
+    int my_fd = open("/data/dalvik-cache/arm/system@framework@boot.art", O_RDONLY);
+    if (my_fd < 0) {
+        ActionManager::GetInstance().QueueEventTrigger("prepare-fs-data");
+        ActionManager::GetInstance().QueueEventTrigger("init-user");
+    } else {
+        close(my_fd);
+    }
+#endif
+
     return Success();
 }
 
@@ -1017,7 +1027,11 @@ static Result<Success> do_installkey(const BuiltinArguments& args) {
     }
     return ExecWithRebootOnFailure(
         "enablefilecrypto_failed",
+#ifndef QUICKBOOT
         {{"exec", "/system/bin/vdc", "--wait", "cryptfs", "enablefilecrypto"}, args.context});
+#else
+        {{"exec", "/system/bin/vdc", "cryptfs", "enablefilecrypto"}, args.context});
+#endif
 }
 
 static Result<Success> do_init_user0(const BuiltinArguments& args) {
