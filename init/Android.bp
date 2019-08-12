@@ -132,6 +132,16 @@ cc_library_static {
         type: "lite",
         export_proto_headers: true,
     },
+    product_variables: {
+        quickboot: {
+            cppflags: [
+                "-DQUICKBOOT",
+            ],
+            cflags: [
+                "-DQUICKBOOT",
+            ]
+        },
+    },
 }
 
 /*
