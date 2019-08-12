@@ -8,4 +8,14 @@ cc_library {
         "-Wall",
         "-Werror",
     ],
+    product_variables: {
+        quickboot: {
+            cppflags: [
+                "-DQUICKBOOT",
+            ],
+            cflags: [
+                "-DQUICKBOOT",
+            ]
+        },
+    },
 }
