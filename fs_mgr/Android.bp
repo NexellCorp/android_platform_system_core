@@ -86,4 +86,14 @@ cc_library_static {
     ],
     export_include_dirs: ["include_fstab"],
     header_libs: ["libbase_headers"],
+    product_variables: {
+        quickboot: {
+            cppflags: [
+                "-DQUICKBOOT",
+            ],
+            cflags: [
+                "-DQUICKBOOT",
+            ]
+        },
+    },
 }
