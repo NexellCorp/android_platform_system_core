@@ -216,7 +216,7 @@ on post-fs
     mount none /mnt/runtime/default /storage bind rec
     mount none none /storage slave rec
 
-    restorecon --recursive --cross-filesystems /sys/kernel/debug
+    # restorecon --recursive --cross-filesystems /sys/kernel/debug
 
     chown system cache /cache
     mkdir /cache/recovery 0770 system cache
