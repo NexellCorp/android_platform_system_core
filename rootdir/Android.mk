@@ -5,7 +5,11 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := init.rc
+ifeq ($(NEXELL_QUICKBOOT), false)
 LOCAL_SRC_FILES := $(LOCAL_MODULE)
+else
+LOCAL_SRC_FILES := initq.rc
+endif
 LOCAL_MODULE_CLASS := ETC
 LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT)
 
