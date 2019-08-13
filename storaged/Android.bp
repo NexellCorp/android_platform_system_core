@@ -82,7 +82,14 @@ cc_binary {
 
     defaults: ["storaged_defaults"],
 
-    init_rc: ["storaged.rc"],
+    product_variables: {
+        normalboot: {
+            init_rc: ["storaged.rc"],
+        },
+        quickboot: {
+            init_rc: ["storagedq.rc"],
+        },
+    },
 
     srcs: ["main.cpp"],
 
