@@ -210,6 +210,8 @@ on post-fs
     start servicemanager
     start hwservicemanager
     start vndservicemanager
+    start surfaceflinger
+    start zygote
 
     # mount rootfs rootfs / remount bind ro
     mount rootfs rootfs / shared rec
