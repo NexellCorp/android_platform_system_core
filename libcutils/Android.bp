@@ -184,6 +184,17 @@ cc_library {
         "-Wall",
         "-Wextra",
     ],
+
+    product_variables: {
+        quickboot: {
+            cppflags: [
+                "-DQUICKBOOT",
+            ],
+            cflags: [
+                "-DQUICKBOOT",
+            ]
+        },
+    },
 }
 
 subdirs = ["tests"]
