@@ -18,6 +18,7 @@
 
 #include "trace-dev.inc"
 
+#ifndef QUICKBOOT
 static pthread_once_t atrace_once_control = PTHREAD_ONCE_INIT;
 
 // Set whether tracing is enabled in this process.  This is used to prevent
@@ -77,3 +78,36 @@ void atrace_int64_body(const char* name, int64_t value)
 {
     WRITE_MSG("C|%d|", "|%" PRId64, name, value);
 }
+#else
+void atrace_set_tracing_enabled(bool enabled __unused)
+{
+}
+
+void atrace_setup()
+{
+}
+
+void atrace_begin_body(const char* name __unused)
+{
+}
+
+void atrace_end_body()
+{
+}
+
+void atrace_async_begin_body(const char* name __unused, int32_t cookie __unused)
+{
+}
+
+void atrace_async_end_body(const char* name __unused, int32_t cookie __unused)
+{
+}
+
+void atrace_int_body(const char* name __unused, int32_t value __unused)
+{
+}
+
+void atrace_int64_body(const char* name __unused, int64_t value __unused)
+{
+}
+#endif
