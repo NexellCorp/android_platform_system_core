@@ -293,8 +293,12 @@ void Service::SetProcessAttributes() {
         }
     }
 
+#ifndef QUICKBOOT
     // TODO: work out why this fails for `console` then upgrade to FATAL.
     if (setpgid(0, getpid()) == -1) PLOG(ERROR) << "setpgid failed for " << name_;
+#else
+    setpgid(0, getpid());
+#endif
 
     if (gid_) {
         if (setgid(gid_) != 0) {
