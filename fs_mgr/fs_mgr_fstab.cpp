@@ -638,7 +638,6 @@ err:
     return NULL;
 }
 
-#ifndef QUICKBOOT
 /* merges fstab entries from both a and b, then returns the merged result.
  * note that the caller should only manage the return pointer without
  * doing further memory management for the two inputs, i.e. only need to
@@ -675,7 +674,6 @@ static struct fstab *in_place_merge(struct fstab *a, struct fstab *b)
     a->num_entries = total_entries;
     return a;
 }
-#endif
 
 /* Extracts <device>s from the by-name symlinks specified in a fstab:
  *   /dev/block/<type>/<device>/by-name/<partition>
@@ -770,7 +768,6 @@ struct fstab *fs_mgr_read_fstab_dt()
     return fstab;
 }
 
-#ifndef QUICKBOOT
 /*
  * Identify path to fstab file. Lookup is based on pattern
  * fstab.<hardware>, fstab.<hardware.platform> in folders
@@ -793,14 +790,12 @@ static std::string get_fstab_path()
 
     return std::string();
 }
-#endif
 
 /*
  * loads the fstab file and combines with fstab entries passed in from device tree.
  */
 struct fstab *fs_mgr_read_fstab_default()
 {
-#ifndef QUICKBOOT
     std::string default_fstab;
 
     // Use different fstab paths for normal boot and recovery boot, respectively
@@ -822,9 +817,6 @@ struct fstab *fs_mgr_read_fstab_default()
     // combines fstab entries passed in from device tree with
     // the ones found from default_fstab file
     return in_place_merge(fstab_dt, fstab);
-#else
-    return fs_mgr_read_fstab_dt();
-#endif
 }
 
 void fs_mgr_free_fstab(struct fstab *fstab)
