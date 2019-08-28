@@ -555,6 +555,14 @@ static void InstallSigtermHandler() {
 }
 
 int main(int argc, char** argv) {
+
+#ifdef QUICKBOOT
+	/* it need the settle time to quickboot */
+	if (!access("/sbin/recovery", F_OK) ) {
+		sleep(2);
+	}
+#endif
+
     if (!strcmp(basename(argv[0]), "ueventd")) {
         return ueventd_main(argc, argv);
     }
