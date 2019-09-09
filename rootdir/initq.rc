@@ -392,7 +392,7 @@ on late_start
     chown system system /sys/kernel/ipv4/tcp_rmem_min
     chown system system /sys/kernel/ipv4/tcp_rmem_def
     chown system system /sys/kernel/ipv4/tcp_rmem_max
-    chown root radio /proc/cmdline
+    chown system system /proc/cmdline
 
 
 on init-user
@@ -470,7 +470,7 @@ on boot
     chown system system /sys/kernel/ipv4/tcp_rmem_min
     chown system system /sys/kernel/ipv4/tcp_rmem_def
     chown system system /sys/kernel/ipv4/tcp_rmem_max
-    chown root radio /proc/cmdline
+    chown system system /proc/cmdline
 
     setprop net.tcp.default_init_rwnd 60
 
