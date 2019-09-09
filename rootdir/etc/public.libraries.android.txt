@@ -24,3 +24,17 @@ libsync.so
 libvulkan.so
 libwebviewchromium_plat_support.so
 libz.so
+libhardware.so
+libgui.so
+libutils.so
+libcutils.so
+libnativeloader.so
+libbinder.so
+libsync.so
+libui.so
+libbacktrace.so
+libnativehelper.so
+libbase.so
+libunwind.so
+liblzma.so
+libc++.so
