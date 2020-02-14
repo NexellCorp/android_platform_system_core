@@ -51,6 +51,7 @@ namespace.default.search.paths += /%PRODUCT%/${LIB}
 namespace.default.permitted.paths  = /system/${LIB}/drm
 namespace.default.permitted.paths += /system/${LIB}/extractors
 namespace.default.permitted.paths += /system/${LIB}/hw
+namespace.default.permitted.paths += /vendor/${LIB}/extractors
 namespace.default.permitted.paths += /%PRODUCT%/${LIB}
 # These are where odex files are located. libart has to be able to dlopen the files
 namespace.default.permitted.paths += /system/framework
