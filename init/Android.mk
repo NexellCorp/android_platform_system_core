@@ -43,6 +43,10 @@ include $(CLEAR_VARS)
 LOCAL_CPPFLAGS := $(init_cflags)
 LOCAL_SRC_FILES := main.cpp
 
+ifeq ($(NEXELL_CRIU), true)
+LOCAL_CPPFLAGS += -DNEXELL_CRIU
+endif
+
 LOCAL_MODULE:= init
 
 LOCAL_FORCE_STATIC_EXECUTABLE := true

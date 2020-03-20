@@ -606,6 +606,12 @@ int main(int argc, char** argv) {
         mount("sysfs", "/sys", "sysfs", 0, NULL);
         mount("selinuxfs", "/sys/fs/selinux", "selinuxfs", 0, NULL);
 
+
+#ifdef NEXELL_CRIU // for CRIU
+        mkdir("/dev/net", 0755);
+        mknod("/dev/net/tun", S_IFCHR | 0666, makedev(10, 200));
+#endif
+
         mknod("/dev/kmsg", S_IFCHR | 0600, makedev(1, 11));
 
         if constexpr (WORLD_WRITABLE_KMSG) {

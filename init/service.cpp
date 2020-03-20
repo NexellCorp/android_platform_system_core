@@ -28,6 +28,9 @@
 #include <sys/wait.h>
 #include <termios.h>
 #include <unistd.h>
+#ifdef NEXELL_CRIU // for CRIU
+#include <stdint.h>
+#endif
 
 #include <android-base/file.h>
 #include <android-base/logging.h>
@@ -62,6 +65,12 @@ using android::base::StartsWith;
 using android::base::StringPrintf;
 using android::base::unique_fd;
 using android::base::WriteStringToFile;
+
+#ifdef NEXELL_CRIU // for CRIU
+using android::base::ReadFileToString;
+#define MAX_REPEAT_COUNT       2
+bool e_zygote_restored = false;
+#endif
 
 namespace android {
 namespace init {
@@ -841,11 +850,80 @@ Result<Success> Service::Start() {
     LOG(INFO) << "starting service '" << name_ << "'...";
 
     pid_t pid = -1;
+#ifndef NEXELL_CRIU // for CRIU
     if (namespace_flags_) {
         pid = clone(nullptr, nullptr, namespace_flags_ | SIGCHLD, nullptr);
     } else {
         pid = fork();
     }
+#else
+    if (!strcmp(name_.c_str(), "zygote")) {
+        if (e_zygote_restored) {
+            PLOG(ERROR) << "CRIU: e_zygote_restored TRU";
+            NotifyStateChange("running");
+            return Success();
+        }
+
+        PLOG(ERROR) << "CRIU: process name = " << name_.c_str();
+
+        if (access("/data/criu/flags/dumped", F_OK) == 0) {
+            //run restore
+            if (namespace_flags_) {
+                pid = clone(nullptr, nullptr, namespace_flags_ | SIGCHLD, nullptr);
+            } else {
+                pid = fork();
+            }
+            PLOG(ERROR) << "CRIU: do restore : fork pid=" << pid;
+            if (pid == 0) {
+                std::string str_dump_count;
+                int dump_count = 0;
+
+                // check dump count
+                ReadFileToString("/data/criu/flags/dump_count", &str_dump_count);
+
+                if (str_dump_count.empty()) {
+                    dump_count = 0;
+                } else {
+                    dump_count = std::stoi(str_dump_count);
+                }
+
+                ++dump_count;
+
+                if (dump_count <= MAX_REPEAT_COUNT) {
+                    std::stringstream ssInt;
+                    ssInt << dump_count;
+                    WriteStringToFile(ssInt.str(), "/data/criu/flags/dump_count");
+
+                    if (dump_count < MAX_REPEAT_COUNT) {
+                        remove("/data/criu/flags/dumped");
+                    }
+                    PLOG(ERROR) << "CRIU: will dump again at next boot time.";
+                }
+
+                PLOG(ERROR) << "CRIU: Run script for restore";
+                execl("/system/bin/criu_restore.sh", "criu_restore.sh", NULL);
+           }
+            PLOG(ERROR) << "CRIU: SUCCESS!! unshare & criu";
+
+            e_zygote_restored = true;
+            NotifyStateChange("running");
+            return Success();
+        } else {
+            if (namespace_flags_) {
+                pid = clone(nullptr, nullptr, namespace_flags_ | SIGCHLD, nullptr);
+            } else {
+                pid = fork();
+            }
+            PLOG(ERROR) << "CRIU: No zygote dump, does not restored, pid = " << pid;
+        }
+    } else {
+        if (namespace_flags_) {
+            pid = clone(nullptr, nullptr, namespace_flags_ | SIGCHLD, nullptr);
+        } else {
+            pid = fork();
+        }
+    }
+#endif
 
     if (pid == 0) {
         umask(077);
