@@ -141,6 +141,14 @@ cc_library_static {
                 "-DQUICKBOOT",
             ]
         },
+        criu: {
+            cppflags: [
+                "-DNEXELL_CRIU=1"
+            ],
+            cflags: [
+                "-DNEXELL_CRIU=1"
+            ]
+        },
     },
 }
 

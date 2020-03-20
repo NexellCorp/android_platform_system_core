@@ -5,10 +5,15 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := init.rc
-ifeq ($(INIT_RC_QUICKBOOT), false)
+ifeq ($(NEXELL_QUICKBOOT), false)
 LOCAL_SRC_FILES := $(LOCAL_MODULE)
 else
+# for CRIU
+ifeq ($(NEXELL_QUICKBOOT), true)
+LOCAL_SRC_FILES := initq.criu.rc
+else
 LOCAL_SRC_FILES := initq.rc
+endif
 endif
 LOCAL_MODULE_CLASS := ETC
 LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT)
